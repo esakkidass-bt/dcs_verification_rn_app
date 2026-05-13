@@ -31,7 +31,7 @@ class BasicFunctions(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun forceExitApp() {
-        this.currentActivity?.finishAffinity()
+        reactApplicationContext.currentActivity?.finishAffinity()
     }
 
     @ReactMethod
