@@ -8,7 +8,6 @@ import android.util.Log
 object Utils {
 
     fun isDeveloperOptionsEnabled(context: Activity?): Boolean {
-        return false
         return try {
             // Use structural equality (==) for Kotlin
             Settings.Global.getInt(
@@ -57,8 +56,8 @@ object Utils {
                         context?.finishAffinity()
                     }
                     .show()
-        } catch (e: Settings.SettingNotFoundException) {
-            Log.e("DeveloperOptionsCheck", "Developer options setting not found", e)
+        } catch (e: Exception) {
+            Log.e("Utils", "Error showing alert", e)
         }
     }
 }

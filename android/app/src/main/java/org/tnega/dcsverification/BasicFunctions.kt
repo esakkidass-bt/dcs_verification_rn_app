@@ -1,13 +1,9 @@
 package org.tnega.dcsverification
 
-import android.view.View
-import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.facebook.react.uimanager.ReactShadowNode
-import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.bridge.Promise
 
 import com.facebook.react.bridge.Arguments
@@ -27,7 +23,7 @@ import android.util.Log
 import java.lang.Exception
 
 class BasicFunctions(reactContext: ReactApplicationContext) :
-        ReactContextBaseJavaModule(reactContext), ReactPackage {
+        ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String {
         return "BasicFunctions" // Name of the module
@@ -35,18 +31,7 @@ class BasicFunctions(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun forceExitApp() {
-        //        android.os.Process.killProcess(android.os.Process.myPid());
         this.currentActivity?.finishAffinity()
-    }
-
-    override fun createNativeModules(p0: ReactApplicationContext): MutableList<NativeModule> {
-        TODO("Not yet implemented")
-    }
-
-    override fun createViewManagers(
-            p0: ReactApplicationContext
-    ): MutableList<ViewManager<View, ReactShadowNode<*>>> {
-        TODO("Not yet implemented")
     }
 
     @ReactMethod

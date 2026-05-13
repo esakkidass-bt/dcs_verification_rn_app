@@ -32,13 +32,12 @@ class DarkZipFileModule internal constructor(context: ReactApplicationContext) :
 
     private val TAG = this.name
 
-    @get:ReactMethod(isBlockingSynchronousMethod = true)
-    val directoryPath: String
-        get() {
-            val path = _context.filesDir.absolutePath
-            Log.d(TAG, "f:getDirectoryPath > $path")
-            return path
-        }
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getDirectoryPath(): String {
+        val path = _context.filesDir.absolutePath
+        Log.d(TAG, "f:getDirectoryPath > $path")
+        return path
+    }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     fun isFileExist(filePath: String): Boolean {
@@ -103,18 +102,17 @@ class DarkZipFileModule internal constructor(context: ReactApplicationContext) :
         onError: Callback,
         onSuccess: Callback
     ) {
-        var input: InputStream? = null
         try {
-            val zipFilePath = directoryPath + '/'.toString() + fileName
-            input = body.byteStream()
+            val zipFilePath = getDirectoryPath() + '/'.toString() + fileName
+            val input = body.byteStream()
 
-            val fos = FileOutputStream(zipFilePath)
-
-            val bytesIn = ByteArray(4096)
-            var read = 0
-            Log.d("saveFile", "init")
-            while ((input.read(bytesIn).also { read = it }) != -1) {
-                fos.write(bytesIn, 0, read)
+            FileOutputStream(zipFilePath).use { fos ->
+                val bytesIn = ByteArray(4096)
+                var read = 0
+                Log.d("saveFile", "init")
+                while ((input.read(bytesIn).also { read = it }) != -1) {
+                    fos.write(bytesIn, 0, read)
+                }
             }
             Log.d("saveFile", "completed")
             unzipV2(fileName, destDirName, onError, onSuccess)
@@ -132,43 +130,43 @@ class DarkZipFileModule internal constructor(context: ReactApplicationContext) :
         promise.resolve(deviceId)
     }
 
-    @ReactMethod(isBlockingSynchronousMethod = true)
+    @ReactMethod
     fun unzipV2(fileName: String, destDirName: String, onError: Callback, onSuccess: Callback) {
         try {
-            val zipFilePath = directoryPath + '/'.toString() + fileName
-            val destDirectory = File(directoryPath + '/'.toString() + destDirName)
+            val zipFilePath = getDirectoryPath() + '/'.toString() + fileName
+            val destDirectory = File(getDirectoryPath() + '/'.toString() + destDirName)
             val destDir = File(destDirectory.toString())
             if (!destDir.exists()) {
                 destDir.mkdir()
             }
-            val zipIn = ZipInputStream(FileInputStream(zipFilePath))
-            var entry = zipIn.nextEntry
-            // iterates over entries in the zip file
-            while (entry != null) {
-                println(entry.name)
-                val filePath = destDirectory.toString() + File.separator + entry.name
-                if (!entry.isDirectory) {
-                    // if the entry is a file, extracts it
-                    extractFile(zipIn, filePath)
-                } else {
-                    // if the entry is a directory, make the directory
-                    val dir = File(filePath)
-                    dir.mkdir()
+            ZipInputStream(FileInputStream(zipFilePath)).use { zipIn ->
+                var entry = zipIn.nextEntry
+                // iterates over entries in the zip file
+                while (entry != null) {
+                    println(entry.name)
+                    val filePath = destDirectory.toString() + File.separator + entry.name
+                    if (!entry.isDirectory) {
+                        // if the entry is a file, extracts it
+                        extractFile(zipIn, filePath)
+                    } else {
+                        // if the entry is a directory, make the directory
+                        val dir = File(filePath)
+                        dir.mkdir()
+                    }
+                    zipIn.closeEntry()
+                    entry = zipIn.nextEntry
                 }
-                zipIn.closeEntry()
-                entry = zipIn.nextEntry
             }
-            zipIn.close()
             deleteFile(fileName, onError, onSuccess)
         } catch (ex: Exception) {
             onError.invoke()
         }
     }
 
-    @ReactMethod(isBlockingSynchronousMethod = true)
+    @ReactMethod
     fun deleteFile(fileName: String, onError: Callback, onSuccess: Callback) {
         try {
-            val file = File(directoryPath + '/'.toString() + fileName)
+            val file = File(getDirectoryPath() + '/'.toString() + fileName)
             val isDeleted = file.delete()
 
             if (!isDeleted) {
@@ -203,13 +201,13 @@ class DarkZipFileModule internal constructor(context: ReactApplicationContext) :
             if (!file.parentFile.exists()) {
                 file.parentFile.mkdirs()
             }
-            val bos = BufferedOutputStream(FileOutputStream(filePath))
-            val bytesIn = ByteArray(4096)
-            var read = 0
-            while ((zipIn.read(bytesIn).also { read = it }) != -1) {
-                bos.write(bytesIn, 0, read)
+            BufferedOutputStream(FileOutputStream(filePath)).use { bos ->
+                val bytesIn = ByteArray(4096)
+                var read = 0
+                while ((zipIn.read(bytesIn).also { read = it }) != -1) {
+                    bos.write(bytesIn, 0, read)
+                }
             }
-            bos.close()
         }
     }
 }

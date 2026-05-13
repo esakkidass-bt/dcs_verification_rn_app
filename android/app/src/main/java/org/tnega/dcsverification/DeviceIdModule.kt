@@ -3,26 +3,12 @@ package org.tnega.dcsverification
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
-import android.view.View
-import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.*
-import com.facebook.react.uimanager.ReactShadowNode
-import com.facebook.react.uimanager.ViewManager
 class DeviceIdModule(reactContext: ReactApplicationContext) :
-        ReactContextBaseJavaModule(reactContext), ReactPackage {
+        ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String {
         return "DeviceIdModule"
-    }
-
-    override fun createNativeModules(p0: ReactApplicationContext): MutableList<NativeModule> {
-        TODO("Not yet implemented")
-    }
-
-    override fun createViewManagers(
-            p0: ReactApplicationContext
-    ): MutableList<ViewManager<View, ReactShadowNode<*>>> {
-        TODO("Not yet implemented")
     }
 
     @ReactMethod

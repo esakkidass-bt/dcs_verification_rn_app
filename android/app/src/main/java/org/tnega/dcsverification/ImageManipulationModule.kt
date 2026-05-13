@@ -7,35 +7,20 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.os.Environment
-import android.provider.Settings
 import android.util.Log
-import android.view.View
-import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.Callback
-import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.facebook.react.uimanager.ReactShadowNode
-import com.facebook.react.uimanager.ViewManager
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class ImageManipulationModule (reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext),
-    ReactPackage {
+class ImageManipulationModule (reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String {
         return "ImageManipulationModule"
-    }
-
-    override fun createNativeModules(p0: ReactApplicationContext): MutableList<NativeModule> {
-        TODO("Not yet implemented")
-    }
-
-    override fun createViewManagers(p0: ReactApplicationContext): MutableList<ViewManager<View, ReactShadowNode<*>>> {
-        TODO("Not yet implemented")
     }
 
     @ReactMethod
