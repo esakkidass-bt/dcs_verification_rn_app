@@ -1,0 +1,36 @@
+{
+  "masterSeasonId": "3",
+  "method": "1",
+  "season": "62",
+  "surveys": [
+    {
+      "cropClassificationId": "22",
+      "cropCount": "0",
+      "cropLandExtent": "0.2000",
+      "cropNameId": "",
+      "cropSeasonType": "6",
+      "cropStage": null,
+      "cropTypeId": "6",
+      "cultivatorId": "5120",
+      "cultivatorName": "எம். எஸ்.  ராஜேந்திரன்",
+      "cultivatorTypeId": "1",
+      "districtCode": "589",
+      "expectedHarvestDate": "",
+      "id": "1698411998613",
+      "image": "file:///data/user/0/org.tnega.cropsurvey/files/photos/71573af2-23ec-4dbc-ba3e-b2989bee1b27.jpg",
+      "imgLat": "13.254196",
+      "imgLon": "80.212341",
+      "imgOrientationX": "0.011851",
+      "imgOrientationY": "-0.001864",
+      "imgOrientationZ": "-0.000399",
+      "imgTimestamp": "2023-10-27",
+      "irrigationSourceId": null,
+      "isBorderOrRowCrop": "",
+      "sownDate": "",
+      "subDivisionNumber": "1",
+      "surveyNumber": "407",
+      "talukCode": "5694",
+      "villageCode": "628739"
+    }
+  ]
+}

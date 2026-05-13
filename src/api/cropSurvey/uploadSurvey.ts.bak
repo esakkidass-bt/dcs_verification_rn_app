@@ -1,0 +1,311 @@
+import { IUser } from "../../@types";
+import { ICropSurvey } from "../../@types/form";
+import { generateRandomNumber, POST } from "../../helpers";
+import { executeSql } from "../../helpers/sqlite";
+import { SQLiteService } from "../../services";
+import { ITableNames } from "../local/tables/tableData";
+import logs from "../../helpers/logs";
+
+import { documentDirectory as EFSDocDir } from "expo-file-system";
+import { Alert } from "react-native";
+
+interface Props {
+  userId: IUser["userId"];
+  surveyId: ICropSurvey["id"];
+  deviceId: string;
+  onUpdateSuccess?: () => void;
+  onUpdateFail?: ([err, status]?: [number, any]) => void;
+}
+
+function parseUndefinedValues(value: any, returnableValue = "null") {
+  if (["undefined"].includes(value)) {
+    return returnableValue;
+  }
+  return value;
+}
+
+const index = async (props: Props) => {
+  const db = await new SQLiteService().getDb();
+
+  // wait for 2 seconds
+  db.transaction(async (tx) => {
+    const tableName: ITableNames = "cropSurvey";
+    const query = `SELECT cs.districtCode                                 AS district_code,
+                          cs.talukCode                                    AS taluk_code,
+                          cs.villageCode                                  AS village_code,
+                          cs.surveyNumber                                 AS survey_number,
+                          cs.subDivisionNumber                            AS sub_division_number,
+                          (SELECT s.seasonId
+                           FROM season AS s
+                           WHERE s.villageCode = cs.villageCode
+                             and s.talukCode = cs.talukCode
+                             and s.districtCode = cs.districtCode)        AS season_id,
+                          cs.cropStage                                    AS crop_stage,
+                          cs.croppingMethod                               AS cropping_method,
+                          cs.cropSeasonType                               AS crop_season_type,
+                          cs.cropTypeId                                   AS crop_type_id,
+                          cs.cropClassificationId                         AS crop_classification_id,
+                          cs.cropNameId                                   AS crop_name_id,
+                          cs.cropLandExtent                               AS crop_land_extent,
+                          cs.irrigationSourceId                           AS irrigation_source_id,
+                          cs.sownDate                                     AS sown_date,
+                          cs.expectedHarvestDate                          AS expected_harvested_date,
+                          cs.cultivatorTypeId                             AS cultivator_type_id,
+                          cs.cultivatorId                                 AS cultivator_id,
+                          cs.cultivatorName                               AS cultivator_name,
+                          cs.imgLat                                       AS crop_image_latitude,
+                          cs.imgLon                                       AS crop_image_longitude,
+                          cs.imgOrientationX                              AS crop_image_orientation_x,
+                          cs.imgOrientationY                              AS crop_image_orientation_y,
+                          cs.imgOrientationZ                              AS crop_image_orientation_z,
+                          cs.imgTimestamp                                 AS crop_image_timestamp,
+                          cs.image                                        AS crop_image,
+                          cs.isBorderOrRowCrop                            AS is_border_or_row_crop,
+                          cs.cropAge                                      AS crop_age,
+                          cs.theervai                                     AS theervai,
+                          cs.orupogaIrupogaNanjai                         AS orupoga_irupoga_nanjai,
+                          cs.cropCount                                    AS crop_count,
+
+                          (SELECT csmd.appVersion
+                           FROM cropSurveyMetaData AS csmd
+                           WHERE csmd.cropSurveyId = CAST(cs.id AS TEXT)) AS app_version,
+
+                          (SELECT csmd.gpsAccuracy
+                           FROM cropSurveyMetaData AS csmd
+                           WHERE csmd.cropSurveyId = CAST(cs.id AS TEXT)) AS gps_accuracy,
+
+                          (SELECT csmd.formType
+                           FROM cropSurveyMetaData AS csmd
+                           WHERE csmd.cropSurveyId = CAST(cs.id AS TEXT)) AS form_type,
+
+                          (SELECT COALESCE(cis.syncStatus, 'pending') AS syncStatus
+                           FROM cropImageStatus AS cis
+                           WHERE cis.imageId = CAST(cs.image AS TEXT))    AS image_sync_status
+
+                   FROM ${tableName} AS cs
+                          LEFT JOIN cropSurveyMetaData AS csmd
+                                    ON CAST(id AS TEXT) = csmd.cropSurveyId
+                   WHERE CAST(id AS TEXT) = '${props.surveyId}'`;
+
+    await executeSql(tx, `get data from ${tableName}`, query, {
+      debug: false,
+      logSql: false,
+      callback: async (e) => {
+        try {
+          let data = e.rows._array[0];
+          if (!data) {
+            props.onUpdateFail?.([404, null]);
+            return;
+          }
+
+          // console.debug(" > ", data);
+
+          // console.log('uploadData stingified > ',JSON.stringify(data))
+          let imageResponse: [number, any] = [400, {}];
+
+          //? undefined value check
+          let checkedValue: any = {};
+          for (const key of Object.keys(data)) {
+            checkedValue[key] = parseUndefinedValues(data[key]);
+          }
+
+          let parsedData = {
+            ...checkedValue,
+          };
+          let _crop_image_data_list = data.crop_image?.split("/");
+            let imageId = _crop_image_data_list[_crop_image_data_list?.length - 1]?.split(".")[0];
+            parsedData["image_id"] = imageId;
+
+          if (parsedData?.form_type === "surveyNumberForm") {
+
+            // console.log(">>>>imageId", imageId);
+
+            if (parsedData.image_sync_status !== "synced") {
+              console.debug(">>>>>>> image_sync_status need to sync ");
+              imageResponse = await POST({
+                name: "crop_image",
+                path: "crop_image",
+                // log: {
+                //   text: true,
+                // },
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                  "X-DEVICE-ID": props.deviceId,
+                  "X-USER-ID": props.userId,
+                },
+                data: {
+                  image_id: imageId,
+                  survey_number: parsedData?.survey_number,
+                  village_code: parsedData?.village_code,
+                  crop_name_id: parsedData?.crop_name_id,
+                  crop_stage: parsedData?.crop_stage,
+                  crop_image: {
+                    uri: data.crop_image,
+                    name: `${imageId}-${generateRandomNumber(4)}.jpg`,
+                    type: "image/jpeg",
+                  },
+                },
+              }).then(async ([status, res]) => {
+                if (status === 200) {
+                  db.transaction(async (_tx) => {
+                    await executeSql(
+                      _tx,
+                      `update tyhe image status to synced`,
+                      `UPDATE cropImageStatus
+                                                                              SET syncStatus = 'synced'
+                                                                              WHERE CAST(imageId AS TEXT) = '${data.crop_image}'`,
+                      { debug: false },
+                    );
+                  });
+                }
+                return [status, res];
+              });
+            }
+          } else {
+            parsedData["crop_image"] = {
+              uri: data.crop_image,
+              name: `${imageId}-${generateRandomNumber(4)}.jpg`,
+              type: "image/jpeg",
+            };
+          }
+
+          let response;
+          console.debug(">>imageResponse", imageResponse);
+
+          const { crop_image, ...restOfTheParsedData } = parsedData;
+          response = await POST({
+            data: restOfTheParsedData, // log:{
+            //   text: false
+            // },
+            name: `upload survey`,
+            path: "crop_survey",
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "X-DEVICE-ID": props.deviceId,
+              "X-USER-ID": props.userId,
+            },
+          }).then(async ([status, res]) => {
+            console.debug(">>>> ", status);
+            const _response =
+              typeof res === "object"
+                ? JSON.stringify(res)
+                : typeof res === "string"
+                  ? res
+                  : `Unkown type ${typeof res}`;
+            await logs.writeLogToFile({
+              message: `--------------------------------------------------------------------------
+            survey id: ${props.surveyId}
+            time - ${new Date().toLocaleString()}
+            status - ${status}
+            res - ${_response}
+            userId - ${props.userId}
+            data - ${JSON.stringify(parsedData, null, 2)}
+            --------------------------------------------------------------------------`,
+              _fileName: `uploadSurvey`,
+            });
+            if (status === 503) {
+              props.onUpdateFail?.([status, res]);
+
+              return [status, res];
+            } else if (status === 500) {
+              props.onUpdateFail?.([status, res]);
+
+              return [status, "Error"];
+            } else if (status === 200 && res?.message === "Crop detail added successfully") {
+              db.transaction(async (_tx) => {
+                await executeSql(
+                  _tx,
+                  `update sync status - cropSurvey`,
+                  `UPDATE cropSurvey
+                                                                            SET syncStatus = 'completed'
+                                                                            WHERE CAST(id AS TEXT) = '${props.surveyId}'`,
+                  { debug: false },
+                );
+                await executeSql(
+                  _tx,
+                  `update sync status - surveyStats`,
+                  `UPDATE surveyStats
+                                                                             SET status = 'completed'
+                                                                             WHERE id = "${data.districtCode}_${data.talukCode}_${data.villageCode}_${data.surveyNumber}_${data.subDivisionNumber}"`,
+                  { debug: false },
+                );
+
+                await logs.writeLogToFile({
+                  message: `-> owner delete, survey id: ${props.surveyId}`,
+                  _fileName: `uploadSurvey`,
+                });
+                await executeSql(
+                  _tx,
+                  `delete owner data`,
+                  `DELETE
+                                                              FROM owner
+                                                              WHERE
+                                                                CAST(districtCode AS TEXT) =
+                                                                (SELECT CAST(districtCode AS TEXT)
+                                                                 FROM cropSurvey
+                                                                 WHERE CAST(id AS TEXT) = '${props.surveyId}')
+                                                                AND
+                                                                CAST(talukCode AS TEXT) =
+                                                                (SELECT CAST(talukCode AS TEXT)
+                                                                 FROM cropSurvey
+                                                                 WHERE CAST(id AS TEXT) = '${props.surveyId}')
+                                                                AND
+                                                                CAST(villageCode AS TEXT) =
+                                                                (SELECT CAST(villageCode AS TEXT)
+                                                                 FROM cropSurvey
+                                                                 WHERE CAST(id AS TEXT) = '${props.surveyId}')
+                                                                AND
+                                                                CAST(surveyNumber AS TEXT) =
+                                                                (SELECT CAST(surveyNumber AS TEXT)
+                                                                 FROM cropSurvey
+                                                                 WHERE CAST(id AS TEXT) = '${props.surveyId}')
+                                                                AND
+                                                                CAST(subDivisionNumber AS TEXT) =
+                                                                (SELECT CAST(subDivisionNumber AS TEXT)
+                                                                 FROM cropSurvey
+                                                                 WHERE CAST(id AS TEXT) = '${props.surveyId}');`,
+                  {
+                    debug: false,
+                    logSql: false,
+                  },
+                );
+              });
+              props?.onUpdateSuccess?.();
+
+              return [status, res?.message];
+            } else {
+              Alert.alert("Error", `${_response}-${status}`);
+              props.onUpdateFail?.([status, res]);
+              return [status, JSON.stringify(res)];
+            }
+          });
+        } catch (err) {
+          console.error(err);
+          let data = e.rows._array[0];
+
+          await logs.writeLogToFile({
+            message: `Failed to process
+--------------------------------------------------------------------------
+survey id: ${props?.surveyId}
+time - ${new Date().toLocaleString()}
+userId - ${props?.userId}
+err - ${err?.toString() || "error while fetching data"}
+data - ${JSON.stringify(data, null, 2)}
+--------------------------------------------------------------------------`,
+            _fileName: `uploadSurvey`,
+          });
+          props.onUpdateFail?.([
+            400,
+            typeof err === "object"
+              ? JSON.stringify(err)
+              : typeof err === "string"
+                ? err
+                : `Unkown type ${typeof err}`,
+          ]);
+        }
+      },
+    });
+  });
+};
+
+export default index;

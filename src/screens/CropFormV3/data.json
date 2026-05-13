@@ -1,0 +1,291 @@
+{
+  "cropClassificationId": "15",
+  "cropNameId": "54",
+  "cropSeasonType": "2",
+  "cropStage": "flowering",
+  "cropTypeId": "1",
+  "expectedHarvestDate": "2023/11/30",
+  "irrigationSourceId": "5",
+  "labelCropClassification": "Cereals",
+  "labelCropName": "Pearl Millet",
+  "labelCropSesonType": "Seasonal",
+  "labelCropStage": "Flowering",
+  "labelCropType": "Agriculture",
+  "labelIrrigationSource": "Pond",
+  "selectedSubDivisionNumbers": [
+    "1A",
+    "1B",
+    "13B",
+    "13C"
+  ],
+  "sownDate": "2023/10/1",
+  "seasonData": {
+    "id": "730_5958_629431",
+    "masterSeasonId": "3",
+    "seasonId": "113",
+    "seasonName": "Rabi",
+    "districtCode": "730",
+    "talukCode": "5958",
+    "villageCode": "629431"
+  },
+  "season": "113",
+  "masterSeasonId": "3",
+  "surveys": [
+    {
+      "subDivisionNumber": "1A",
+      "surveys": [],
+      "cultivatorTypeId": "1",
+      "remainingLandExtent": "0.022",
+      "cultivatorId": "847",
+      "cultivatorName": "ஏழுமலை"
+    },
+    {
+      "subDivisionNumber": "1B",
+      "surveys": [],
+      "cultivatorTypeId": "1",
+      "remainingLandExtent": "0.004",
+      "cultivatorId": "851",
+      "cultivatorName": "விஜி"
+    },
+    {
+      "subDivisionNumber": "13B",
+      "surveys": [],
+      "cultivatorTypeId": "1",
+      "remainingLandExtent": "0.028",
+      "cultivatorId": "840",
+      "cultivatorName": "நாகராஜ்"
+    },
+    {
+      "subDivisionNumber": "13C",
+      "surveys": [
+        {
+          "id": "df3ecfdb-86e5-4be5-9466-91991f2d5fc2",
+          "cropSeasonType": "6",
+          "cropClassificationId": "21",
+          "extent": "0.0000"
+        }
+      ],
+      "cultivatorTypeId": "1",
+      "remainingLandExtent": "0.0360",
+      "cultivatorId": "843",
+      "cultivatorName": "புஷ்பலதா"
+    }
+  ]
+}
+
+
+//..........
+{
+  "cropClassificationId": "15",
+  "cropNameId": "54",
+  "cropSeasonType": "2",
+  "cropStage": "flowering",
+  "cropTypeId": "1",
+  "expectedHarvestDate": "2023/11/30",
+  "irrigationSourceId": "5",
+  "labelCropClassification": "Cereals",
+  "labelCropName": "Pearl Millet",
+  "labelCropSesonType": "Seasonal",
+  "labelCropStage": "Flowering",
+  "labelCropType": "Agriculture",
+  "labelIrrigationSource": "Pond",
+  "method": "1",
+  "selectedSubDivisionNumbers": [
+    "1A",
+    "1B",
+    "13B",
+    "13C"
+  ],
+  "sownDate": "2023/10/1"
+}
+
+{
+  "masterSeasonId": undefined,
+  "method": "1",
+  "season": undefined,
+  "surveys": [
+    {
+      "cropClassificationId": "15",
+      "cropCount": "0",
+      "cropLandExtent": "0.022",
+      "cropNameId": "54",
+      "cropSeasonType": "2",
+      "cropStage": "flowering",
+      "cropTypeId": "1",
+      "cultivatorId": "847",
+      "cultivatorName": "ஏழுமலை",
+      "cultivatorTypeId": "1",
+      "districtCode": undefined,
+      "expectedHarvestDate": "2023/11/30",
+      "id": "1700750549071undefined0",
+      "irrigationSourceId": "5",
+      "isBorderOrRowCrop": "",
+      "sownDate": "2023/10/1",
+      "subDivisionNumber": "1A",
+      "surveyNumber": undefined,
+      "talukCode": undefined,
+      "villageCode": undefined
+    },
+    {
+      "cropClassificationId": "15",
+      "cropCount": "0",
+      "cropLandExtent": "0.004",
+      "cropNameId": "54",
+      "cropSeasonType": "2",
+      "cropStage": "flowering",
+      "cropTypeId": "1",
+      "cultivatorId": "851",
+      "cultivatorName": "விஜி",
+      "cultivatorTypeId": "1",
+      "districtCode": undefined,
+      "expectedHarvestDate": "2023/11/30",
+      "id": "1700750549071undefined1",
+      "irrigationSourceId": "5",
+      "isBorderOrRowCrop": "",
+      "sownDate": "2023/10/1",
+      "subDivisionNumber": "1B",
+      "surveyNumber": undefined,
+      "talukCode": undefined,
+      "villageCode": undefined
+    },
+    {
+      "cropClassificationId": "15",
+      "cropCount": "0",
+      "cropLandExtent": "0.028",
+      "cropNameId": "54",
+      "cropSeasonType": "2",
+      "cropStage": "flowering",
+      "cropTypeId": "1",
+      "cultivatorId": "840",
+      "cultivatorName": "நாகராஜ்",
+      "cultivatorTypeId": "1",
+      "districtCode": undefined,
+      "expectedHarvestDate": "2023/11/30",
+      "id": "1700750549071undefined2",
+      "irrigationSourceId": "5",
+      "isBorderOrRowCrop": "",
+      "sownDate": "2023/10/1",
+      "subDivisionNumber": "13B",
+      "surveyNumber": undefined,
+      "talukCode": undefined,
+      "villageCode": undefined
+    },
+    {
+      "cropClassificationId": "15",
+      "cropCount": "0",
+      "cropLandExtent": "0.036",
+      "cropNameId": "54",
+      "cropSeasonType": "2",
+      "cropStage": "flowering",
+      "cropTypeId": "1",
+      "cultivatorId": "843",
+      "cultivatorName": "புஷ்பலதா",
+      "cultivatorTypeId": "1",
+      "districtCode": undefined,
+      "expectedHarvestDate": "2023/11/30",
+      "id": "1700750549071undefined3",
+      "irrigationSourceId": "5",
+      "isBorderOrRowCrop": "",
+      "sownDate": "2023/10/1",
+      "subDivisionNumber": "13C",
+      "surveyNumber": undefined,
+      "talukCode": undefined,
+      "villageCode": undefined
+    }
+  ]
+}
+
+
+
+{
+  "cropClassificationId": "15",
+  "cropCount": "0",
+  "cropLandExtent": "0.06",
+  "cropNameId": "58",
+  "cropSeasonType": "2",
+  "cropStage": "harvesting",
+  "cropTypeId": "1",
+  "cultivatorId": "853",
+  "cultivatorName": "வேதகிரி",
+  "cultivatorTypeId": "1",
+  "districtCode": "730",
+  "expectedHarvestDate": "2023/12/31",
+  "id": "1701098544041120",
+  "image": "file:///data/user/0/org.tnega.cropsurvey/files/photos/9c85299c-b93a-4037-9866-336459be34df.jpg",
+  "imgLat": "12.784023",
+  "imgLon": "80.152963",
+  "imgOrientationX": "0.002131",
+  "imgOrientationY": "-0.000799",
+  "imgOrientationZ": "-0.001198",
+  "imgTimestamp": "2023-11-27",
+  "irrigationSourceId": "5",
+  "isBorderOrRowCrop": "",
+  "sownDate": "2023/11/1",
+  "subDivisionNumber": "2",
+  "surveyNumber": "12",
+  "talukCode": "5958",
+  "villageCode": "629431"
+}
+
+{
+  "crop_image": {
+    "name": "image.jpg",
+    "type": "image/jpeg",
+    "uri": "file:///data/user/0/org.tnega.cropsurvey/files/photos/9c85299c-b93a-4037-9866-336459be34df.jpg"
+  },
+  "crop_classification_id": "15",
+  "crop_count": "0",
+  "crop_image_latitude": "12.784023",
+  "crop_image_longitude": "80.152963",
+  "crop_image_orientation_x": "0.002131",
+  "crop_image_orientation_y": "-0.000799",
+  "crop_image_orientation_z": "-0.001198",
+  "crop_image_timestamp": "2023-11-27",
+  "crop_land_extent": "0.035",
+  "crop_name_id": "58",
+  "crop_season_type": "2",
+  "crop_stage": "harvesting",
+  "crop_type_id": "1",
+  "cropping_method": "1",
+  "cultivator_id": "860",
+  "cultivator_name": "கணேச நாயக்கர்",
+  "cultivator_type_id": "1",
+  "district_code": "730",
+  "expected_harvested_date": "2023/12/31",
+  "irrigation_source_id": "5",
+  "is_border_or_row_crop": "",
+  "season_id": "113",
+  "sown_date": "2023/11/1",
+  "sub_division_number": "5",
+  "survey_number": "12",
+  "taluk_code": "5958",
+  "village_code": "629431"
+}
+//
+//crop_classification_id:15
+//crop_count:0
+//crop_image_latitude:12.784023
+//crop_image_longitude:80.152963
+//crop_image_orientation_x:0.002131
+//crop_image_orientation_y:-0.000799
+//crop_image_orientation_z:-0.001198
+//crop_image_timestamp:2023-11-27
+//crop_land_extent:0.035
+//crop_name_id:58
+//crop_season_type:2
+//crop_stage:harvesting
+//crop_type_id:1
+//cropping_method:1
+//cultivator_id:860
+//cultivator_name:கணேச நாயக்கர்
+//cultivator_type_id:1
+//district_code:730
+//expected_harvested_date:2023/12/31
+//irrigation_source_id:5
+//is_border_or_row_crop:
+//season_id:113
+//sown_date:2023/11/1
+//sub_division_number:5
+//survey_number:12
+//taluk_code:5958
+//village_code:629431

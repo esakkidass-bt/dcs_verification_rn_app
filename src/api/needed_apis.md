@@ -1,0 +1,15 @@
+/v3/login
+/v3/logout
+/v3/otp
+/v3/crop_master
+/v3/crop_survey
+/v3/misc
+/v3/owner_details_paginated
+/v3/owner_details
+/v3/owner_details_summary
+/v3/season
+/v3/web_links
+/v4/survey_status_summary
+/online/location_details
+/online/spatial_boundary
+/online/survey_dropdown
