@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, NativeModules} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, NativeModules } from 'react-native';
 import {
   IOfflineVillageDetail,
   IUser,
@@ -7,7 +7,7 @@ import {
   VerifyOtpProps,
 } from '../../@types';
 import api from '../../api';
-import {navigation} from '../../routers/navigation';
+import { navigation } from '../../routers/navigation';
 import {
   AuthContextProps,
   IAuthProviderProps,
@@ -16,17 +16,17 @@ import {
 } from './type';
 import buildAssignedVillageFromApi from '../../helpers/parser/buildAssignedVillageFromApi';
 import * as Network from '@react-native-community/netinfo';
-import {LoadingOverlayProps} from '../../components/LoadingOverlay';
+import { LoadingOverlayProps } from '../../components/LoadingOverlay';
 // import * as NetInfo from "@react-native-community/netinfo";
 import useDict from '../../hooks/useDict';
-import {asyncStorage} from '../../helpers/asyncStorage';
+import { asyncStorage } from '../../helpers/asyncStorage';
 export const AuthContext = React.createContext<AuthContextProps>(
   {} as AuthContextProps,
 );
 
-export const AuthProvider = ({children}: IAuthProviderProps) => {
+export const AuthProvider = ({ children }: IAuthProviderProps) => {
   const ln = useDict();
-  const {DeviceIdModule} = NativeModules;
+  const { DeviceIdModule } = NativeModules;
   const [authStatus, setAuthStatus] =
     useState<IAuthStatusType>('unauthenticated');
   const [user, setUser] = useState<IUser>({} as IUser);
@@ -38,7 +38,7 @@ export const AuthProvider = ({children}: IAuthProviderProps) => {
   const [loaderStatus, setLoaderStatus] = useState<LoadingOverlayProps>({
     isLoading: false,
   });
-  const {BasicFunctions} = NativeModules;
+  const { BasicFunctions } = NativeModules;
 
   const checkDeveloperOptionEnabled = async () => {
     BasicFunctions.checkDeveloperOptionEnabled();
@@ -46,24 +46,24 @@ export const AuthProvider = ({children}: IAuthProviderProps) => {
 
   const updateLoaderStatus = (e: LoadingOverlayProps) => {
     setLoaderStatus(prevVal => {
-      return {...prevVal, ...e};
+      return { ...prevVal, ...e };
     });
   };
 
   const openLoader = (loadingText?: string) => {
-    setLoaderStatus({isLoading: true, loadingText});
+    setLoaderStatus({ isLoading: true, loadingText });
   };
   const closeLoader = () => {
-    setLoaderStatus({isLoading: false});
+    setLoaderStatus({ isLoading: false });
   };
 
   async function signIn(e: SignInProps) {
-    updateLoaderStatus({isLoading: true, loadingText: 'Signing In...'});
+    updateLoaderStatus({ isLoading: true, loadingText: 'Signing In...' });
     if (!deviceId) {
       Alert.alert('Error', 'Error while getting device id');
       return;
     }
-    await api.auth.login({deviceId, ...e}).then(([status, res]) => {
+    await api.auth.login({ deviceId, ...e }).then(([status, res]) => {
       if (status === 200) {
         switch (res?.success) {
           case 1:
@@ -203,7 +203,8 @@ export const AuthProvider = ({children}: IAuthProviderProps) => {
   }
 
   async function fetchUser() {
-    updateLoaderStatus({isLoading: true, loadingText: ln('Checking user')});
+    //TODO
+    // updateLoaderStatus({isLoading: true, loadingText: ln('Checking user')});
     await checkDeviceIdAndGenerate();
 
     await asyncStorage.getObj('user', null).then(async (e: IUser) => {
