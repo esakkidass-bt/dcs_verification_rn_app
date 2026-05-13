@@ -1,5 +1,5 @@
 {
-  "name": "dcs_verification_app",
+  "name": "org.tnega.dcsverification",
   "version": "0.0.1",
   "private": true,
   "scripts": {

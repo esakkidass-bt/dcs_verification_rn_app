@@ -1,4 +1,4 @@
-package com.dcs_verification_app
+package org.tnega.dcsverification
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
