@@ -1,4 +1,4 @@
-import {POST} from '../../helpers';
+import { POST } from '../../helpers';
 
 interface Props {
   username: string;
@@ -15,6 +15,8 @@ const login = async (props: Props) => {
     path: 'login',
     data,
   }).then(([status, res]) => {
+    console.log('status LOGIN>> ', status);
+    console.log('res LOGIN>> ', res);
     return [status, res];
   });
 };

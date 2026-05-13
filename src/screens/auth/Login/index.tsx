@@ -1,34 +1,48 @@
-import React, {useState} from 'react';
-import {Box, Button, Center, Input, Pressable, Row, Text} from 'native-base';
-import {SafeAreaView} from '../../../layout';
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Center,
+  Pressable,
+  Text,
+  Image,
+} from 'native-base';
+
+import { SafeAreaView } from '../../../layout';
 import useDict from '../../../hooks/useDict';
-import {useAuth, useStateContext} from '../../../hooks';
-import {Image} from 'native-base';
+import { useAuth, useStateContext } from '../../../hooks';
 import config from '../../../config';
-import {navigation} from '../../../routers/navigation';
+import { navigation } from '../../../routers/navigation';
+
+import CustomTextInput from '../../../components/TextInput';
+
 interface ILogInterface {
   username: string;
 }
+
 const Index = () => {
   // hooks
   const ln = useDict();
   const auth = useAuth();
   const globalState = useStateContext();
 
-  // States
-  const [formData, setFormData] = useState<ILogInterface>({} as ILogInterface);
+  // states
+  const [formData, setFormData] = useState<ILogInterface>({
+    username: '',
+  });
+
   const [isBtnDisabled] = useState(false);
 
-  const handleInputChange = (key: keyof ILogInterface) => (e: any) => {
-    setFormData(prevVal => {
-      return {...prevVal, [key]: e};
-    });
-  };
+  const handleInputChange =
+    (key: keyof ILogInterface) => (value: string) => {
+      setFormData(prev => ({
+        ...prev,
+        [key]: value,
+      }));
+    };
 
   const onContinue = async () => {
-    //FIXME
     if (formData.username === '9876543210') {
-      // navigation.navigate('VerifierHome');
       auth.setUser({
         userId: 138233,
         userName: 'Verifier',
@@ -39,119 +53,102 @@ const Index = () => {
         fullSurveyBtnEnable: false,
         assignedVillages: {} as any,
       });
-      auth.setAuthStatus('authenticated');
-    }else{
 
-      auth?.signIn({...formData});
+      auth.setAuthStatus('authenticated');
+    } else {
+      auth?.signIn({ ...formData });
     }
   };
 
-  // UseEffects
   return (
     <SafeAreaView>
-      <Box flex="1" bg="primary.100">
-        <Box flex="1">
-          <Center flex="1">
-            <Box flex="1">
-              <Box
-                justifyContent="center"
-                alignItems={'center'}
-                my="2"
-                flex="1">
-                <Center w="5/6">
-                  <Image
-                    source={{
-                      uri: 'https://smartcity.eletsonline.com/wp-content/uploads/2014/08/Tamil_Nadu_Emblem.png',
-                    }}
-                    alt="Crop Survey"
-                    w="16"
-                    h="16"
-                  />
-                  <Box>
-                    <Text
-                      color="primary.900"
-                      fontSize={
-                        globalState?.languageCode === 'en' ? '4xl' : '2xl'
-                      }>
-                      {ln('appTitle')}
-                    </Text>
-                  </Box>
-                  <Text color="primary.900" fontSize={'md'}>
-                    {ln('Online')}
-                  </Text>
-                  <Text
-                    textAlign={'center'}
-                    fontWeight={'bold'}
-                    fontSize={globalState?.languageCode === 'en' ? 'md' : 'sm'}>
-                    {ln('slogan')}
-                  </Text>
-                </Center>
-              </Box>
-              <Box flex="1">
-                {/* //?input  */}
+      <Box flex="1" bg="primary.100" px="4">
 
-                <Box>
-                  <Box>
-                    <Text
-                      textAlign={'center'}
-                      fontWeight={'bold'}
-                      fontSize={
-                        globalState?.languageCode === 'en' ? 'md' : 'sm'
-                      }>
-                      {ln('enterMobileNumber')}
-                    </Text>
-                    <Row bg="white" borderRadius={'md'} marginY={2}>
-                      <Input
-                        padding={'2'}
-                        borderRadius={'md'}
-                        fontSize={'lg'}
-                        leftElement={
-                          <Box p="2">
-                            <Text fontSize={'lg'}>+91</Text>
-                          </Box>
-                        }
-                        flex="1"
-                        // placeholder={ln("enterMobileNumber")}
+        {/* Top Section */}
+        <Center flex="1">
+          <Box w="full">
 
-                        value={formData.username}
-                        keyboardType="numeric"
-                        maxLength={10}
-                        onChangeText={handleInputChange('username')}
-                      />
-                    </Row>
-                  </Box>
-                </Box>
+            {/* Logo */}
+            <Center mb="6">
+              <Image
+                source={{
+                  uri: 'https://smartcity.eletsonline.com/wp-content/uploads/2014/08/Tamil_Nadu_Emblem.png',
+                }}
+                alt="Logo"
+                w="16"
+                h="16"
+              />
 
-                <Box>
-                  <Button
-                    onPress={onContinue}
-                    width={'full'}
-                    disabled={isBtnDisabled}
-                    opacity={isBtnDisabled ? '0.7' : 1}>
-                    {ln('continue')}
-                  </Button>
-                </Box>
-                {config.env === 'dev' ? (
-                  <Pressable
-                    onPress={() => navigation.navigate('DeveloperSettings')}
-                    alignItems={'center'}
-                    my="4">
-                    <Text fontSize={'md'} color="red.500">
-                      Dev Settings
-                    </Text>
-                  </Pressable>
-                ) : null}
-                {/*
-                <Button bg='red.500' onPress={dropTables}>Drop</Button>
-                <Button bg='blue.500' onPress={auth.fetchUser}>fetchUser</Button> */}
-              </Box>
-            </Box>
-          </Center>
-        </Box>
+              <Text
+                color="primary.900"
+                fontSize={
+                  globalState?.languageCode === 'en'
+                    ? '4xl'
+                    : '2xl'
+                }
+                mt="2">
+                {ln('appTitle')}
+              </Text>
 
-        <Box bottom={'4'}>
+              <Text color="primary.900" fontSize="md">
+                {ln('Online')}
+              </Text>
+
+              <Text
+                textAlign="center"
+                fontWeight="bold"
+                fontSize={
+                  globalState?.languageCode === 'en'
+                    ? 'md'
+                    : 'sm'
+                }>
+                {ln('slogan')}
+              </Text>
+            </Center>
+
+            {/* Mobile Input */}
+            <CustomTextInput
+              maintitle={ln('enterMobileNumber')}
+              label="Mobile Number"
+              value={formData.username}
+              onChangeText={handleInputChange('username')}
+              type="number-pad"
+              // maxLength={}
+              astrict
+            />
+
+            {/* Continue Button */}
+            <Button
+              mt="4"
+              onPress={onContinue}
+              width="full"
+              disabled={isBtnDisabled}
+              opacity={isBtnDisabled ? 0.7 : 1}>
+              {ln('continue')}
+            </Button>
+
+            {/* Dev Settings */}
+            {config.env === 'dev' ? (
+              <Pressable
+                onPress={() =>
+                  navigation.navigate('DeveloperSettings')
+                }
+                alignItems="center"
+                my="4">
+                <Text fontSize="md" color="red.500">
+                  Dev Settings
+                </Text>
+              </Pressable>
+            ) : null}
+          </Box>
+        </Center>
+
+        {/* Bottom */}
+        <Box mb="4">
           <Center>
-            <Text textAlign={'center'}>{ln('termsAndConditions')}</Text>
+            <Text textAlign="center">
+              {ln('termsAndConditions')}
+            </Text>
           </Center>
         </Box>
       </Box>

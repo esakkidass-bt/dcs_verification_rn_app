@@ -1,8 +1,8 @@
 // import { ENV } from "../../env";
-import {Platform} from 'react-native';
-import {EnvTypes, IConfigProps} from '../@types';
+import { Platform } from 'react-native';
+import { EnvTypes, IConfigProps } from '../@types';
 
-const ENV: EnvTypes = 'staging';
+const ENV: EnvTypes = 'dev'
 const VERSION = '1.0.3';
 
 const ANDROID_BUILD_VERSION_CODE = 5;
@@ -17,9 +17,11 @@ const $: IConfigProps[] = [
   {
     env: 'dev',
     api_url:
-      'http://ec2-13-235-45-34.ap-south-1.compute.amazonaws.com/crop_survey_api/api/v3',
+      // 'http://ec2-13-235-45-34.ap-south-1.compute.amazonaws.com/crop_survey_api/api/v3',
+      'https://dcs.bontonsoftwares.com/cropSurveyVerification/',
     survey_status_summary_api:
-      'http://ec2-13-235-45-34.ap-south-1.compute.amazonaws.com/crop_survey_api/api/v3',
+      // 'http://ec2-13-235-45-34.ap-south-1.compute.amazonaws.com/crop_survey_api/api/v3',
+      'https://dcs.bontonsoftwares.com/cropSurveyVerification/',
     localDb: `tnega-crop-survey–01-${ENV}.db`,
     xAppKey: 'crop$urvey!',
     version: VERSION,
@@ -31,8 +33,8 @@ const $: IConfigProps[] = [
   },
   {
     env: 'test',
-    api_url: 'https://cropsurveyapi.tnega.org/app/api/v3',
-    survey_status_summary_api: 'https://cropsurveyapi.tnega.org/app/api/v3',
+    api_url: 'https://dcs.bontonsoftwares.com/cropSurveyVerification',
+    survey_status_summary_api: 'https://dcs.bontonsoftwares.com/cropSurveyVerification',
 
     localDb: `tnega_crop-survey-01-${ENV}.db`,
     xAppKey: 'crop$urvey!',
@@ -133,6 +135,6 @@ const $: IConfigProps[] = [
   },
 ];
 
-const config = {...($.find(e => e.env === ENV) as IConfigProps)};
+const config = { ...($.find(e => e.env === ENV) as IConfigProps) };
 
 export default config;
