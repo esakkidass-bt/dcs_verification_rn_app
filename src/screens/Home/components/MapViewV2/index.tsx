@@ -288,7 +288,7 @@ const MapWithPolygon = () => {
     //     ' availabelee. Please refresh the app or contact the admin')
     //   return
     // }
-    auth.checkDeveloperOptionEnabled();
+   // auth.checkDeveloperOptionEnabled();
     auth.updateLoaderStatus({
       isLoading: true,
       loadingText: 'Fetching your current location....',

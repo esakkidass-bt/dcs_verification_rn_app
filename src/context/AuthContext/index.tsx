@@ -95,56 +95,104 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
     closeLoader();
   }
 
-  async function verifyOtp(e: VerifyOtpProps) {
-    updateLoaderStatus({
-      isLoading: true,
-      loadingText: 'Verifying OTP...',
-    });
-    await api.auth.verifyOtp(e).then(async ([status, res]) => {
-      if (status !== 200) {
-        closeLoader();
-        return Alert.alert(
-          'Error',
-          `${status} - ${res?.message || 'Error while verifying OTP'}`,
-        );
-      }
-      if (res.success === 1) {
-        let userData: IUser = {
-          userId: res.data.user_id,
-          userName: res.data.user_name,
-          mobileNumber: res.data.mobile_number,
-          role: res.data.role,
-          role_group_id: res.data.role_group_id,
-          bufferDistance: res.data.buffer_distance,
-          bufferUnit: res.data.buffer_unit,
-          fullSurveyBtnEnable: res.data.full_survey_btn_enable,
-          assignedVillages: buildAssignedVillageFromApi([
-            ...res.data.assigned_villages,
-          ]),
-          mode: res.data.mode,
-        };
+async function verifyOtp(e: VerifyOtpProps) {
+  updateLoaderStatus({
+    isLoading: true,
+    loadingText: 'Verifying OTP...',
+  });
 
-        await asyncStorage.storeString('gpsAccuracy', res?.data?.gps_accuracy);
-        await asyncStorage.storeString(
-          'gpsAccuracyUnit',
-          res?.data?.gps_accuracy_unit,
-        );
-        await asyncStorage.storeObj('user', userData);
-        await asyncStorage.storeString('mode', 'online');
-        setAppMode('online');
-        setUser(userData);
+  try {
+    const [status, res] = await api.auth.verifyOtp(e);
 
-        closeLoader();
-        setAuthStatus('authenticated');
-      } else {
-        closeLoader();
-        return Alert.alert(
-          ln('Error'),
-          `${res?.message || 'error'} \nError Code : ${res?.success}`,
-        );
+    console.log('RAW RESPONSE => ', res);
+
+    let parsedResponse: any = res;
+    if (typeof res === 'string') {
+      const trimmed = res.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          parsedResponse = JSON.parse(trimmed);
+        } catch (parseError) {
+          console.warn('VERIFY OTP parse warning =>', parseError);
+          parsedResponse = res;
+        }
       }
-    });
+    }
+
+    const response = Array.isArray(parsedResponse)
+      ? parsedResponse[0]
+      : parsedResponse;
+
+    console.log('FINAL RESPONSE => ', response);
+
+    if (status !== 200) {
+      closeLoader();
+
+      return Alert.alert(
+        'Error',
+        `${status} - ${
+          response?.message || 'Error while verifying OTP'
+        }`,
+      );
+    }
+
+    if (response?.success === 1) {
+      const data = response?.data || {};
+
+      let userData: IUser = {
+        userId: data?.user_id,
+        userName: data?.user_name,
+        mobileNumber: data?.mobile_number,
+        role: data?.role,
+        role_group_id: data?.role_group_id,
+        bufferDistance: data?.buffer_distance,
+        bufferUnit: data?.buffer_unit,
+        fullSurveyBtnEnable: data?.full_survey_btn_enable,
+        assignedVillages: buildAssignedVillageFromApi(
+          data?.assigned_villages || [],
+        ),
+        mode: data?.mode,
+      };
+
+      await asyncStorage.storeString(
+        'gpsAccuracy',
+        String(data?.gps_accuracy || ''),
+      );
+
+      await asyncStorage.storeString(
+        'gpsAccuracyUnit',
+        String(data?.gps_accuracy_unit || ''),
+      );
+
+      await asyncStorage.storeObj('user', userData);
+
+      await asyncStorage.storeString('mode', 'online');
+
+      setAppMode('online');
+
+      setUser(userData);
+
+      closeLoader();
+
+      setAuthStatus('authenticated');
+    } else {
+      closeLoader();
+
+      Alert.alert(
+        ln('Error'),
+        `${response?.message || 'error'} \nError Code : ${
+          response?.success
+        }`,
+      );
+    }
+  } catch (error) {
+    closeLoader();
+
+    console.log('VERIFY OTP ERROR => ', error);
+
+    Alert.alert('Error', 'Something went wrong');
   }
+}
 
   async function resendOtp(e: ResendOtpProps) {
     await api.auth.resendOtp(e).then(res => {
@@ -297,7 +345,7 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
         goOfflineMode,
         goOnlineMode,
         handleAppMode,
-        checkDeveloperOptionEnabled,
+        //checkDeveloperOptionEnabled,
       }}>
       {children}
     </AuthContext.Provider>

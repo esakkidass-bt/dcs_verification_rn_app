@@ -198,9 +198,16 @@ const POST = async (props: PostProps): Promise<[number, any]> => {
           }
         } else if (res.headers.get('content-type')?.includes('text')) {
           const html = await res.text();
-          // const _res = getValueFromHTMLResponse(html, /<title>(.*?)<\/title>/)
-          // console.log(`POST ERROR on ${props.path}: `, res.status, _res)
-          return [res.status as number, html.slice(0, 30)];
+          let data: any = html;
+          const trimmed = html?.trim();
+          if (trimmed?.startsWith('{') || trimmed?.startsWith('[')) {
+            try {
+              data = JSON.parse(trimmed);
+            } catch (error) {
+              console.warn(`POST ${props.name} text response is not valid JSON`, error);
+            }
+          }
+          return [res.status as number, data];
         } else {
           return [500, 'Unknown error'] as [number, any];
         }

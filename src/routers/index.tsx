@@ -12,6 +12,8 @@ import {Box} from 'native-base';
 export default function Index() {
   // const globalState = useGlobalState();
   const auth = useAuth();
+  console.log('auth', auth.authStatus);
+  console.log('auth.user', auth.user);
   const stack = () => {
     switch (auth?.authStatus) {
       case 'authenticated':

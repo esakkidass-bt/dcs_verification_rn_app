@@ -18,10 +18,10 @@ const $: IConfigProps[] = [
     env: 'dev',
     api_url:
       // 'http://ec2-13-235-45-34.ap-south-1.compute.amazonaws.com/crop_survey_api/api/v3',
-      'https://dcs.bontonsoftwares.com/cropSurveyVerification/',
+      'https://dcs.bontonsoftwares.com/cropSurveyVerification/app/api',
     survey_status_summary_api:
       // 'http://ec2-13-235-45-34.ap-south-1.compute.amazonaws.com/crop_survey_api/api/v3',
-      'https://dcs.bontonsoftwares.com/cropSurveyVerification/',
+      'https://dcs.bontonsoftwares.com/cropSurveyVerification/app/api',
     localDb: `tnega-crop-survey–01-${ENV}.db`,
     xAppKey: 'crop$urvey!',
     version: VERSION,

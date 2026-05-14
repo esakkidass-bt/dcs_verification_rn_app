@@ -26,7 +26,7 @@ const VerifierHome = () => {
   const ln = useDict();
 
   useEffect(() => {
-    auth.checkDeveloperOptionEnabled();
+  //  auth.checkDeveloperOptionEnabled();
     appUpdate.checkAppBuildVersion();
     const backAction = () => {
       // console.log(selectedLocationData)

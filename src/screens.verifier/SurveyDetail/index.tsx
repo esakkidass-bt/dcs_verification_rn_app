@@ -135,7 +135,7 @@ const SurveyDetail = () => {
   };
 
   useEffect(() => {
-    auth.checkDeveloperOptionEnabled();
+   // auth.checkDeveloperOptionEnabled();
     appUpdate.checkAppBuildVersion();
     // const backAction = () => {
     //   Alert.alert(ln('HoldOn'), ln('exitAppWarningMsg'), [

@@ -40,7 +40,7 @@ export interface AuthContextProps {
   goOfflineMode: (village: IOfflineVillageDetail) => void;
   goOnlineMode: () => void;
   handleAppMode: (mode: 'online' | 'offline') => void;
-  checkDeveloperOptionEnabled: () => void;
+  //checkDeveloperOptionEnabled: () => void;
 }
 export interface IAuthProviderProps {
   children: React.ReactNode;
