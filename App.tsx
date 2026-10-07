@@ -123,7 +123,7 @@ const theme = extendTheme({
   },
 });
 
-const {AppSecurity} = NativeModules;
+const {AppSecurity, BasicFunctions} = NativeModules;
 
 const blacklistedApps = [
   'com.lexa.fakegps',
@@ -220,6 +220,11 @@ declare module 'native-base' {
 export default function App() {
   const [_isPermissionGrantedSuccessfully, setIsPermissionGrantedSuccessfully] =
     useState(false);
+
+  useEffect(() => {
+    BasicFunctions?.checkDeveloperOptionEnabled?.();
+  }, []);
+
   useEffect(() => {
     requestCameraPermission().then(e => {
       setIsPermissionGrantedSuccessfully(e as any);
@@ -300,6 +305,7 @@ export default function App() {
       setAppStateVisible(appState.current);
 
       if (appState.current === 'active') {
+        BasicFunctions?.checkDeveloperOptionEnabled?.();
         appUpdate.checkAppBuildVersion();
 
         fetchDeviceInfo()

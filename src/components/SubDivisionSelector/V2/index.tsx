@@ -1,15 +1,15 @@
-import {Box, Pressable, Row, Text} from 'native-base';
-import React, {useEffect, useState} from 'react';
+import { Box, Pressable, Row, Text } from 'native-base';
+import React, { useEffect, useState } from 'react';
 import api from '../../../api';
-import {useAuth, useStateContext} from '../../../hooks';
+import { useAuth, useStateContext } from '../../../hooks';
 import useDict from '../../../hooks/useDict';
 import ListModal from '../../ListModal';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {colors} from '../../../styles';
-import {useIsFocused} from '@react-navigation/native';
-import {SubDivisionDropDown, SurveyNumberDropDown} from '../../../@types';
+import { colors } from '../../../styles';
+import { useIsFocused } from '@react-navigation/native';
+import { SubDivisionDropDown, SurveyNumberDropDown } from '../../../@types';
 import * as turf from '@turf/turf';
-import {combineSubDivisionNumbers} from '../../../helpers/geo/combineSubDivisions';
+import { combineSubDivisionNumbers } from '../../../helpers/geo/combineSubDivisions';
 
 interface Props {
   disableAllFields?: boolean;

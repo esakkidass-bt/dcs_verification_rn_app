@@ -1,10 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {FlatList, Alert, Image, Modal, View, TouchableOpacity, StyleSheet} from 'react-native';
-import {Radio, Checkbox, Button, Row, Pressable} from 'native-base';
+import {Radio, Button, Row, Pressable} from 'native-base';
 
 import {Box, Text} from 'native-base';
 import {ProfileHeader} from '../../components';
-import {SafeAreaView} from '../../layout';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 import useDict from '../../hooks/useDict';
@@ -15,13 +14,52 @@ import appUpdate from '../../helpers/appUpdate';
 import useAuthContext from '../../hooks/useAuth';
 import {useStateContext} from '../../hooks';
 import api from '../../api';
-import {LocationDetails} from '../../screens/CropForm/components';
 import {navigation} from '../../routers/navigation';
+import {OwnerDetailsOnlineProps} from '../../@types';
 
-const discrepancyOptions = [
-  {key: 'Crop mismatch', value: '1'},
-  {key: 'Incorrect area', value: '2'},
+const remarkOptions = [
+  {key: 'No Crop', value: 'No Crop'},
+  {key: 'Crop Mismatch', value: 'Crop Mismatch'},
+  {key: 'Area Mismatch', value: 'Area Mismatch'},
+  {key: 'Crop Harvested', value: 'Crop Harvested'},
+  {key: 'Crop Damaged due to Natural Calamity', value: 'Crop Damaged due to Natural Calamity'},
 ];
+
+// Helper to format date string to Month and Year (e.g. 'November 2023')
+const formatMonth = (dateString?: string | null): string => {
+  if (!dateString) return '-';
+  try {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    const parts = dateString.split(/[-/]/);
+    if (parts.length >= 2) {
+      if (parts[0].length === 4) {
+        // YYYY/MM/DD or YYYY-MM
+        const year = parts[0];
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        if (monthIndex >= 0 && monthIndex < 12) {
+          return `${months[monthIndex]} ${year}`;
+        }
+      } else if (parts[2]?.length === 4) {
+        // DD/MM/YYYY
+        const year = parts[2];
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        if (monthIndex >= 0 && monthIndex < 12) {
+          return `${months[monthIndex]} ${year}`;
+        }
+      }
+    }
+    const d = new Date(dateString);
+    if (!isNaN(d.getTime())) {
+      return `${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+  } catch (e) {
+    // fallback
+  }
+  return dateString;
+};
 
 // Survey detail interface
 export interface SurveyDetailProps {
@@ -56,69 +94,130 @@ export interface SurveyDetailProps {
   crop_age: string;
   theervai: string;
   orupoga_irupoga_nanjai: string;
+  extent?: string;
+  total_extent?: string;
+  sub_division_area?: string;
+  total_area?: string;
 }
 
-const SurveyDetail = () => {
+const SurveyDetail = (props: any) => {
   const auth = useAuthContext();
   const {BasicFunctions} = NativeModules;
   const ln = useDict();
 
+  const routeItem = props?.route?.params?.item;
   const [surveyRecords, setSurveyRecords] = useState<SurveyDetailProps[]>([]);
-  const [imageModelData, setImageModelData] = useState<{show: boolean, uri: string}>({show: false, uri: ''});
+  const [imageModelData, setImageModelData] = useState<{show: boolean; uri: string}>({
+    show: false,
+    uri: '',
+  });
 
-  // item is passed as route.params.item
   const state = useStateContext();
+  const [subDivisionTotalArea, setSubDivisionTotalArea] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<
     'approved' | 'rejected' | undefined
   >(undefined);
-  const [selectedDiscrepancies, setSelectedDiscrepancies] = useState<string[]>(
-    [],
-  );
-  // const [notes, _setNotes] = useState<{[key: number]: string}>({});
+  const [selectedRemark, setSelectedRemark] = useState<string>('');
+
+  // Fetch or extract sub-division total area
+  useEffect(() => {
+    if (routeItem?.extent) {
+      setSubDivisionTotalArea(routeItem.extent);
+    } else if (state.selectedLocationData?.ownerDetails?.extent) {
+      setSubDivisionTotalArea(state.selectedLocationData.ownerDetails.extent);
+    } else if (
+      state.selectedLocationData.surveyNumber &&
+      state.selectedLocationData.village &&
+      state.selectedLocationData.subDivisionNumber
+    ) {
+      if (auth.appMode === 'offline') {
+        api.local.ownerDetails.read({
+          callback: e => {
+            if (e && e.length > 0 && e[0].extent) {
+              setSubDivisionTotalArea(e[0].extent);
+            }
+          },
+          subDivisionNumber: state.selectedLocationData.subDivisionNumber,
+          villageCode: state.selectedLocationData.village,
+          surveyNumber: state.selectedLocationData.surveyNumber,
+        });
+      } else {
+        api.surveyDropdown
+          .ownerDetail({
+            userId: auth.user.userId,
+            deviceId: auth.deviceId as string,
+            district_code: state.selectedLocationData.district,
+            taluk_code: state.selectedLocationData.taluk,
+            village_code: state.selectedLocationData.village,
+            sub_division: state.selectedLocationData.subDivisionNumber,
+            survey_number: state.selectedLocationData.surveyNumber,
+            role_group_id: auth.user.role_group_id,
+          })
+          .then(e => {
+            if (e && e.length > 0 && e[0].extent) {
+              setSubDivisionTotalArea(e[0].extent);
+            }
+          });
+      }
+    }
+  }, [routeItem, state.selectedLocationData, auth]);
+
   const handleSubmit = async () => {
     console.log('Button pressed');
     const status = selectedStatus;
-    const discrepancies = selectedDiscrepancies || [];
+    const remark = selectedRemark || '';
 
-    if (status === 'rejected' && discrepancies?.length == 0) {
+    if (!status) {
+      Alert.alert('Warning!', 'Please select Approved or Reject.');
+      return;
+    }
+
+    if (status === 'rejected' && !remark) {
       Alert.alert(
         'Warning!',
-        'You need to select any one of the reason to reject.',
+        'You need to select a remark to reject.',
       );
       return;
     }
-    // const note = notes || '';
-    // const output = {
-    //   status,
-    //   discrepancies,
-    //   remarks: '',
-    //   district_id: state.selectedLocationData.district,
-    //   taluk_id: state.selectedLocationData.taluk,
-    //   village_id: state.selectedLocationData.village,
-    //   survey_number: state.selectedLocationData.surveyNumber,
-    //   sub_division: state.selectedLocationData.subDivisionNumber,
-    //   role_group_id: auth.user.role_group_id,
-    // };
 
     console.log('Submitting verification with data:', {
       role_group_id: auth.user.role_group_id?.toString(),
+      status,
+      discrepancies: remark,
+      remarks: remark,
     });
+
     await api.verification
       .verify({
         deviceId: auth.deviceId as string,
         userId: auth.user.userId,
-        discrepancies: discrepancies.join(','),
+        discrepancies: remark,
         status: status as string,
-        remarks: '',
-        district_id: state.selectedLocationData.district,
-        taluk_id: state.selectedLocationData.taluk,
-        village_id: state.selectedLocationData.village,
-        survey_number: state.selectedLocationData.surveyNumber,
-        sub_division: state.selectedLocationData.subDivisionNumber,
+        remarks: remark,
+        district_id:
+          state.selectedLocationData.district ||
+          routeItem?.district_code ||
+          routeItem?.districtCode,
+        taluk_id:
+          state.selectedLocationData.taluk ||
+          routeItem?.taluk_code ||
+          routeItem?.talukCode,
+        village_id:
+          state.selectedLocationData.village ||
+          routeItem?.village_code ||
+          routeItem?.villageCode,
+        survey_number:
+          state.selectedLocationData.surveyNumber ||
+          routeItem?.survey_number ||
+          routeItem?.surveyNumber,
+        sub_division:
+          state.selectedLocationData.subDivisionNumber ||
+          routeItem?.sub_division_number ||
+          routeItem?.subDivisionNumber,
         role_group_id: auth.user.role_group_id?.toString(),
       })
-      .then(([status, response]) => {
-        if (status === 200) {
+      .then(([statusRes, response]) => {
+        if (statusRes === 200) {
           Alert.alert('Success', 'Verification submitted successfully', [
             {
               text: 'OK',
@@ -128,30 +227,14 @@ const SurveyDetail = () => {
         } else {
           Alert.alert(
             'Error',
-            `Failed to submit verification: ${status}:${response?.message}`,
+            `Failed to submit verification: ${statusRes}:${response?.message}`,
           );
         }
       });
   };
 
   useEffect(() => {
-   // auth.checkDeveloperOptionEnabled();
     appUpdate.checkAppBuildVersion();
-    // const backAction = () => {
-    //   Alert.alert(ln('HoldOn'), ln('exitAppWarningMsg'), [
-    //     {
-    //       text: ln('Cancel'),
-    //       onPress: () => null,
-    //     },
-    //     {text: ln('Yes'), onPress: () => BasicFunctions.forceExitApp()},
-    //   ]);
-    //   return true;
-    // };
-    // const backHandler = BackHandler.addEventListener(
-    //   'hardwareBackPress',
-    //   backAction,
-    // );
-    // return () => backHandler.remove();
   }, [BasicFunctions, auth, ln]);
 
   const fetchSurveyRecords = React.useCallback(async () => {
@@ -159,11 +242,26 @@ const SurveyDetail = () => {
     const records = await api.surveyRecords.getSurveyRecords({
       deviceId: auth.deviceId as string,
       userId: auth.user.userId,
-      district_code: state.selectedLocationData.district,
-      taluk_code: state.selectedLocationData.taluk,
-      village_code: state.selectedLocationData.village,
-      survey_number: state.selectedLocationData.surveyNumber,
-      sub_division: state.selectedLocationData.subDivisionNumber,
+      district_code:
+        state.selectedLocationData.district ||
+        routeItem?.district_code ||
+        routeItem?.districtCode,
+      taluk_code:
+        state.selectedLocationData.taluk ||
+        routeItem?.taluk_code ||
+        routeItem?.talukCode,
+      village_code:
+        state.selectedLocationData.village ||
+        routeItem?.village_code ||
+        routeItem?.villageCode,
+      survey_number:
+        state.selectedLocationData.surveyNumber ||
+        routeItem?.survey_number ||
+        routeItem?.surveyNumber,
+      sub_division:
+        state.selectedLocationData.subDivisionNumber ||
+        routeItem?.sub_division_number ||
+        routeItem?.subDivisionNumber,
     });
 
     console.log('records?.length>', records?.length);
@@ -179,45 +277,62 @@ const SurveyDetail = () => {
     state.selectedLocationData.village,
     state.selectedLocationData.surveyNumber,
     state.selectedLocationData.subDivisionNumber,
+    routeItem,
   ]);
 
   useEffect(() => {
     fetchSurveyRecords();
   }, [fetchSurveyRecords]);
 
+  const displayTotalArea =
+    subDivisionTotalArea ||
+    state.selectedLocationData?.ownerDetails?.extent ||
+    routeItem?.extent ||
+    surveyRecords?.[0]?.extent ||
+    surveyRecords?.[0]?.total_extent ||
+    surveyRecords?.[0]?.sub_division_area ||
+    surveyRecords?.[0]?.total_area;
+
   return (
     <Box flex={1}>
       <ProfileHeader disableNavigation />
 
-      <Box bg="primary.600" p="2">
-        <Row flexWrap="wrap" space="2" alignItems={'center'}>
-          <Icon as={Entypo} name="location-pin" size={'sm'} color="white" />
-          {/* {assignedLocationDetails.find(
-                // eslint-disable-next-line eqeqeq
-                e =>
-                  e?.village_lgd_code?.toString() == state.selectedLocationData.village,
-              )} */}
-          <Row space={'1'}>
-            <Row>
-              <Text color="white" fontSize={'xs'} isTruncated>
-                {state.selectedLocationData.surveyNumber}
-              </Text>
-
-              <Text color="white" fontSize={'xs'} isTruncated>
-                /{state.selectedLocationData.subDivisionNumber}
-              </Text>
-            </Row>
-
-            {/*<Text color="white" fontSize={"xs"}  isTruncated>*/}
-            {/*  {props.showSurveyNumber ? `${state.selectedLocationData.surveyNumber}/${state.selectedLocationData.subDivisionNumber}, ` : ''}{locationData.villageName}, {locationData.talukName}, {locationData.districtName}*/}
-            {/*</Text>*/}
-
-            <Text color="white" fontSize={'xs'} isTruncated>
-              {surveyRecords?.[0]?.village_name},{' '}
-              {surveyRecords?.[0]?.district_name},{' '}
-              {surveyRecords?.[0]?.taluk_name},{' '}
+      {/* Sub Division & Location Header */}
+      <Box bg="primary.600" p="3" shadow={2}>
+        <Row flexWrap="wrap" space="2" alignItems={'center'} justifyContent="space-between">
+          <Row space={'1'} alignItems="center">
+            <Icon as={Entypo} name="location-pin" size={'sm'} color="white" />
+            <Text color="white" fontSize={'sm'} bold>
+              {state.selectedLocationData.surveyNumber ||
+                routeItem?.survey_number ||
+                routeItem?.surveyNumber}
+              /
+              {state.selectedLocationData.subDivisionNumber ||
+                routeItem?.sub_division_number ||
+                routeItem?.subDivisionNumber}
             </Text>
           </Row>
+
+          {/* 1. Include Total area of the Sub Division */}
+          {displayTotalArea ? (
+            <Box bg="white" px="2.5" py="1" borderRadius="md">
+              <Text color="primary.700" fontSize={'xs'} bold>
+                {ln('Total Area') || 'Total Area'}: {displayTotalArea} Ares
+              </Text>
+            </Box>
+          ) : null}
+        </Row>
+
+        <Row mt="1">
+          <Text color="white" fontSize={'xs'} opacity={0.9} isTruncated>
+            {surveyRecords?.[0]?.village_name || state.selectedLocationData?.villageName || ''}
+            {surveyRecords?.[0]?.taluk_name || state.selectedLocationData?.talukName
+              ? `, ${surveyRecords?.[0]?.taluk_name || state.selectedLocationData?.talukName}`
+              : ''}
+            {surveyRecords?.[0]?.district_name || state.selectedLocationData?.districtName
+              ? `, ${surveyRecords?.[0]?.district_name || state.selectedLocationData?.districtName}`
+              : ''}
+          </Text>
         </Row>
       </Box>
 
@@ -241,11 +356,6 @@ const SurveyDetail = () => {
                 alignItems="center"
                 overflow="hidden"
                 width="100%">
-                {/* <Image
-                  source={{uri: item.image_path}}
-                  alt={`Crop Survey ${index + 1}`}
-                  style={{width: '70%', aspectRatio: 1, resizeMode: 'cover'}}
-                /> */}
                 <Pressable
                   onPress={() =>
                     setImageModelData({show: true, uri: item.image_path})
@@ -253,12 +363,9 @@ const SurveyDetail = () => {
                   opacity={0.9}>
                   <Image
                     source={{uri: item.image_path}}
-                    // width="100%"
-                    // height={300}
                     style={{
                       width: '50%',
-                      // height: '300',
-                      aspectRatio: '16/9',
+                      aspectRatio: 16 / 9,
                     }}
                     resizeMode="contain"
                     alt="Camera preview"
@@ -275,40 +382,28 @@ const SurveyDetail = () => {
             <Text fontSize="sm" color="gray.600" mb={1}>
               Crop: <Text bold>{item.crop_name || 'N/A'}</Text>
             </Text>
-            {/* <Text fontSize="sm" color="gray.600" mb={1}>
-              Crop Stage: <Text bold>{item.stage || 'N/A'}</Text>
-            </Text> */}
             <Text fontSize="sm" color="gray.600" mb={1}>
-              Crop Type: <Text bold>{item.crop_type_name}</Text> |
-              Classification: <Text bold>{item.crop_classification_name}</Text>
+              Crop Type: <Text bold>{item.crop_type_name}</Text> | Classification:{' '}
+              <Text bold>{item.crop_classification_name}</Text>
             </Text>
             <Text fontSize="sm" color="gray.600" mb={1}>
               Area: <Text bold>{item.area} Ares</Text>
             </Text>
-            {/* <Text fontSize="sm" color="gray.600" mb={1}>
-              Sown Date: <Text bold>{item.sown_date || '-'}</Text> | Expected
-              Harvest: <Text bold>{item.expected_harvested_date || '-'}</Text>
-            </Text> */}
-            {/* <Text fontSize="sm" color="gray.600" mb={1}>
-              Irrigation: <Text bold>{item.irrigation_name ?? 'N/A'}</Text> |
-              Tree
-            </Text> */}
-            {/* Count: <Text bold>{item.tree_count}</Text> */}
-            {/* <Text fontSize="sm" color="gray.600" mb={1}>
-              Theervai: <Text bold>{item.theervai}</Text>
-            </Text> */}
-            {/* <Text fontSize="sm" color="gray.600" mb={1}>
-                Survey Status: <Text bold>{item.survey_status}</Text>
-            </Text> */}
-            {/* <Text fontSize="xs" color="gray.400" mt={2}>
-              Added By: {item.added_by} | Created: {item.created_at}
-            </Text> */}
+
+            {/* 2. Include Crop Sown Month and Crop Harvest Month */}
+            <Text fontSize="sm" color="gray.600" mb={1}>
+              Crop Sown Month: <Text bold>{formatMonth(item.sown_date)}</Text>
+            </Text>
+            <Text fontSize="sm" color="gray.600" mb={1}>
+              Crop Harvest Month:{' '}
+              <Text bold>{formatMonth(item.expected_harvested_date)}</Text>
+            </Text>
           </Box>
         )}
         ListFooterComponent={
           <Box
             bg={'white'}
-            p={2}
+            p={3}
             m={2}
             borderRadius={'xl'}
             overflow="hidden"
@@ -320,7 +415,7 @@ const SurveyDetail = () => {
                 setSelectedStatus(val as 'approved' | 'rejected')
               }
               flexDirection="row"
-              mt={2}
+              mt={1}
               space={'2'}>
               <Row space="4" flexWrap={'wrap'}>
                 <Radio value="approved" mr={4}>
@@ -329,25 +424,25 @@ const SurveyDetail = () => {
                 <Radio value="rejected">Reject</Radio>
               </Row>
             </Radio.Group>
+
+            {/* 3. Remarks (Single Select Radio Buttons) */}
             {selectedStatus === 'rejected' && (
-              <>
-                <Checkbox.Group
-                  value={selectedDiscrepancies || []}
-                  onChange={vals => setSelectedDiscrepancies(vals as string[])}
-                  mt={2}>
-                  {discrepancyOptions.map(opt => (
-                    <Checkbox value={opt?.value} key={opt?.key} mb={1}>
-                      {opt?.key}
-                    </Checkbox>
+              <Box mt={3} pt={2} borderTopWidth={1} borderTopColor="gray.200">
+                <Text bold fontSize="sm" color="gray.700" mb={2}>
+                  Remarks *
+                </Text>
+                <Radio.Group
+                  name="remarksOptions"
+                  value={selectedRemark}
+                  onChange={val => setSelectedRemark(val)}
+                  mt={1}>
+                  {remarkOptions.map(opt => (
+                    <Radio value={opt.value} key={opt.value} mb={2}>
+                      <Text fontSize="sm">{opt.key}</Text>
+                    </Radio>
                   ))}
-                </Checkbox.Group>
-                {/* <Input
-                  placeholder="Remarks"
-                  value={notes[item.id] || ''}
-                  onChangeText={txt => setNotes(n => ({...n, [item.id]: txt}))}
-                  mt={2}
-                /> */}
-              </>
+                </Radio.Group>
+              </Box>
             )}
 
             <Modal
@@ -383,7 +478,6 @@ const SurveyDetail = () => {
 };
 
 export default SurveyDetail;
-
 
 const styles = StyleSheet.create({
   container: {flex: 1, justifyContent: 'center', alignItems: 'center'},
