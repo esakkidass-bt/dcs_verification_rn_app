@@ -1,11 +1,24 @@
 package org.tnega.dcsverification
 
+import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
 class MainActivity : ReactActivity() {
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    Utils.checkDeveloperOptionEnabled(this)
+    Utils.checkRoot(this)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    Utils.checkDeveloperOptionEnabled(this)
+    Utils.checkRoot(this)
+  }
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule

@@ -316,7 +316,7 @@ function checkTimeWindow(): boolean {
     // if(!checkTimeWindow()){
     //   return;
     // }
-    auth.checkDeveloperOptionEnabled();
+    //auth.checkDeveloperOptionEnabled();
     auth.updateLoaderStatus({
       isLoading: true,
       loadingText: 'Fetching your current location....',

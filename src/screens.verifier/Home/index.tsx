@@ -76,7 +76,7 @@ const VerifierHome = () => {
   useEffect(() => {
     console.log('auth.user.assignedVillages', auth.user.assignedVillages);
     
-    auth.checkDeveloperOptionEnabled();
+   // auth.checkDeveloperOptionEnabled();
     appUpdate.checkAppBuildVersion();
     const backAction = () => {
       // console.log(selectedLocationData)

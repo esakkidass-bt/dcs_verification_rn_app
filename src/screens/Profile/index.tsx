@@ -123,7 +123,7 @@ const Index = () => {
 
     asyncStorage.getObj('deviceInfo').then(setDeviceInfo);
 
-    auth.checkDeveloperOptionEnabled();
+   // auth.checkDeveloperOptionEnabled();
     const backAction = () => {
       navigation.goBack();
       return true;
